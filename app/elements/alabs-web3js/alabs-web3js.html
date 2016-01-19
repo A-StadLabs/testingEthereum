@@ -53,6 +53,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <paper-input label="Van" value="{{account}}"></paper-input>
     <paper-button raised on-tap="runContract">Run contract</paper-button>
   </section>
+    <paper-button raised on-tap="doeGet">Doe Get</paper-button>
 
 </template>
 <script>
@@ -159,27 +160,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       maakContract: function(){
 
-
-        var abi = [{
-          "constant": false,
-          "inputs": [{
-            "name": "x",
-            "type": "uint256"
-          }],
-          "name": "set",
-          "outputs": [],
-          "type": "function"
-        }, {
-          "constant": true,
-          "inputs": [],
-          "name": "get",
-          "outputs": [{
-            "name": "retVal",
-            "type": "uint256"
-          }],
-          "type": "function"
-        }];
-
         var code = "6060604052603b8060116000396000f300606060405260e060020a600035046360fe47b1811460245780636d4ce63c14602e575b005b6004356000556022565b6000546060908152602090f3";
 
         var self = this;
@@ -206,14 +186,109 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           console.log('Contract Address: ' + contractData.addr)
           console.log('')
 
-
-
-
-
-
         });
 
       },
+
+      runContract: function() {
+
+      var self = this;
+
+
+
+
+        var abi = [{
+          "constant": false,
+          "inputs": [{
+            "name": "x",
+            "type": "uint256"
+          }],
+          "name": "set",
+          "outputs": [],
+          "type": "function"
+        }, {
+          "constant": true,
+          "inputs": [],
+          "name": "get",
+          "outputs": [{
+            "name": "retVal",
+            "type": "uint256"
+          }],
+          "type": "function"
+        }];
+
+
+
+      this.web3.eth.getGasPrice(function(err, result) {
+
+        var gasPrice = result;
+        var txOptions = {
+          gasPrice: gasPrice.toNumber(10),
+          gasLimit: 3000000,
+          value: 100000000,
+          nonce: 3,
+        };
+
+
+        // TX to register the key 123
+        txOptions.to = self.lastcontractaddress
+        txOptions.nonce += 1
+        var registerTx = lightwallet.txutils.functionTx(abi, 'set', [88], txOptions)
+        var signedRegisterTx = self.global_keystore.signTx(registerTx, 'testing', self.account)
+
+        // inject signedRegisterTx into the network...
+        console.log('Signed register key TX: ' + signedRegisterTx)
+        console.log('')
+
+
+/*
+        var result2 = self.web3.eth.call({
+          to: this.lastcontractaddress
+        });
+        console.log(result2);
+*/
+      });
+
+/*
+
+*/
+      },
+
+      doeGet: function(){
+
+
+
+        var abi = [{
+          "constant": false,
+          "inputs": [{
+            "name": "x",
+            "type": "uint256"
+          }],
+          "name": "set",
+          "outputs": [],
+          "type": "function"
+        }, {
+          "constant": true,
+          "inputs": [],
+          "name": "get",
+          "outputs": [{
+            "name": "retVal",
+            "type": "uint256"
+          }],
+          "type": "function"
+        }];
+
+        var self=this;
+        
+        var MyContract = self.web3.eth.contract(abi);
+        // initiate contract for an address
+        var myContractInstance = MyContract.at(self.lastcontractaddress);
+
+        // call constant function
+        var result = myContractInstance.get();
+        console.log(result.toNumber()) // '0x25434534534'
+      },
+
 
       web3connect: function() {
        
