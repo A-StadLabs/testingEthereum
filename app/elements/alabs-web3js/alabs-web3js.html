@@ -13,38 +13,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
 <script src="../../bower_components/web3/dist/web3.js"></script>
-<!-- <script src="../../scripts/ethereumjs-accounts.js"></script> -->
+<!-- <script src="../../scripts/ethereumjs-accounts.js"></script>
+-->
 <script src="../../scripts/hooked.js"></script>
 <script src="../../scripts/lightwallet.min.js"></script>
 
 <dom-module id="alabs-web3js">
-  <template>
+<template>
 
   <iron-localstorage 
       id="localstorage" 
       name="myWallet" value="{{walletdata}}" 
-      on-iron-localstorage-load-empty="initWallet" on-iron-localstorage-load="loadWallet">
-    </iron-localstorage>
+      on-iron-localstorage-load-empty="initWallet" on-iron-localstorage-load="loadWallet"></iron-localstorage>
 
   <iron-localstorage 
-      id="localstorage" 
-      name="myTo" value="{{to}}">
-    </iron-localstorage>
+      id="localstorage2" 
+      name="myTo" value="{{to}}"></iron-localstorage>
 
+  <iron-localstorage 
+      id="localstorage3" 
+      name="myLastcontractaddress" value="{{lastcontractaddress}}"></iron-localstorage>
 
-    <h1>Welkom op mijn Blockchain</h1>
- 
-    <section>
-      <h1>Doe eens een overschrijving.</h1>
-      <paper-input label="Van" value="{{account}}"></paper-input>
-      <paper-input label="Naar" value="{{to}}"></paper-input>
-      <paper-input label="Amount" value="{{amount}}"></paper-input>
-      <paper-button raised on-tap="transfer">Schrijf over</paper-button>
-    </section>
+  <h1>Welkom op mijn Blockchain</h1>
 
+  <section>
+    <h1>Doe eens een overschrijving.</h1>
+    <paper-input label="Van" value="{{account}}"></paper-input>
+    <paper-input label="Naar" value="{{to}}"></paper-input>
+    <paper-input label="Amount" value="{{amount}}"></paper-input>
+    <paper-button raised on-tap="transfer">Schrijf over</paper-button>
+  </section>
+  <section>
+    <h1>Maak eens een contract</h1>
+    <paper-button raised on-tap="maakContract">Maak contract</paper-button>
+  </section>
+  <section>
+    <h1>Run eens dat contract</h1>
+    <paper-input label="contract adres" value="{{lastcontractaddress}}"></paper-input>
+    <paper-input label="Van" value="{{account}}"></paper-input>
+    <paper-button raised on-tap="runContract">Run contract</paper-button>
+  </section>
 
-  </template>
-  <script>
+</template>
+<script>
   (function() {
 
     Polymer({
@@ -144,6 +155,64 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 //        this.set('walletdata',this.global_keystore.serialize());
         this.web3connect();
       
+      },
+
+      maakContract: function(){
+
+
+        var abi = [{
+          "constant": false,
+          "inputs": [{
+            "name": "x",
+            "type": "uint256"
+          }],
+          "name": "set",
+          "outputs": [],
+          "type": "function"
+        }, {
+          "constant": true,
+          "inputs": [],
+          "name": "get",
+          "outputs": [{
+            "name": "retVal",
+            "type": "uint256"
+          }],
+          "type": "function"
+        }];
+
+        var code = "6060604052603b8060116000396000f300606060405260e060020a600035046360fe47b1811460245780636d4ce63c14602e575b005b6004356000556022565b6000546060908152602090f3";
+
+        var self = this;
+
+        this.web3.eth.getGasPrice(function(err, result) {
+
+          var gasPrice = result;
+          var txOptions = {
+            gasPrice: gasPrice.toNumber(10),
+            gasLimit: 3000000,
+            value: 10000000,
+            nonce: 2,
+            data: code
+          };
+
+          var contractData = lightwallet.txutils.createContractTx( self.account, txOptions);
+          var signedTx = self.global_keystore.signTx(contractData.tx, 'testing', self.account);
+
+
+          self.lastcontractaddress = contractData.addr;
+
+          console.log('Signed Contract creation TX: ' + signedTx)
+          console.log('')
+          console.log('Contract Address: ' + contractData.addr)
+          console.log('')
+
+
+
+
+
+
+        });
+
       },
 
       web3connect: function() {
