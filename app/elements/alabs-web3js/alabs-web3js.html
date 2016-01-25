@@ -160,7 +160,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       maakContract: function(){
 
-        var code = "6060604052603b8060116000396000f300606060405260e060020a600035046360fe47b1811460245780636d4ce63c14602e575b005b6004356000556022565b6000546060908152602090f3";
+        var code = "606060405260678060106000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063993a04b7146037576035565b005b604260048050506058565b6040518082815260200191505060405180910390f35b60006201047590506064565b9056";
 
         var self = this;
 
@@ -170,8 +170,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var txOptions = {
             gasPrice: gasPrice.toNumber(10),
             gasLimit: 3000000,
-            value: 10000000,
-            nonce: 2,
+            value: 20000000,
+            nonce: 4,
             data: code
           };
 
@@ -197,25 +197,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 
-        var abi = [{
-          "constant": false,
-          "inputs": [{
-            "name": "x",
-            "type": "uint256"
-          }],
-          "name": "set",
-          "outputs": [],
-          "type": "function"
-        }, {
-          "constant": true,
-          "inputs": [],
-          "name": "get",
-          "outputs": [{
-            "name": "retVal",
-            "type": "uint256"
-          }],
-          "type": "function"
-        }];
+        var abi = 
+
+[{"constant":true,"inputs":[],"name":"getter","outputs":[{"name":"retVal","type":"uint256"}],"type":"function"}]
+
+        ;
 
 
 
@@ -233,7 +219,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // TX to register the key 123
         txOptions.to = self.lastcontractaddress
         txOptions.nonce += 1
-        var registerTx = lightwallet.txutils.functionTx(abi, 'set', [88], txOptions)
+        var registerTx = lightwallet.txutils.functionTx(abi, 'get', [], txOptions)
         var signedRegisterTx = self.global_keystore.signTx(registerTx, 'testing', self.account)
 
         // inject signedRegisterTx into the network...
@@ -257,36 +243,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       doeGet: function(){
 
 
+        var abi = 
+[{"constant":false,"inputs":[{"name":"myInput","type":"string"}],"name":"set","outputs":[],"type":"function"},{"constant":true,"inputs":[],"name":"get","outputs":[{"name":"","type":"string"}],"type":"function"}]
 
-        var abi = [{
-          "constant": false,
-          "inputs": [{
-            "name": "x",
-            "type": "uint256"
-          }],
-          "name": "set",
-          "outputs": [],
-          "type": "function"
-        }, {
-          "constant": true,
-          "inputs": [],
-          "name": "get",
-          "outputs": [{
-            "name": "retVal",
-            "type": "uint256"
-          }],
-          "type": "function"
-        }];
+;
 
         var self=this;
         
         var MyContract = self.web3.eth.contract(abi);
         // initiate contract for an address
-        var myContractInstance = MyContract.at(self.lastcontractaddress);
+        var myContractInstance = MyContract.at("0x8cc82c50401e9816f6339af3f9d09db90ff92504");
 
         // call constant function
         var result = myContractInstance.get();
-        console.log(result.toNumber()) // '0x25434534534'
+        console.log(result) // '0x25434534534'
       },
 
 
