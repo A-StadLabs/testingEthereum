@@ -55,6 +55,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </section>
     <paper-button raised on-tap="doeGet">Doe Get</paper-button>
 
+  <section>
+    <h1>Encrypt eens wat data voor in mijne wallet...</h1>
+    <paper-input label="message of stringified JSON" value="{{plainMessage}}"></paper-input>
+    <paper-input label="" value="{{pubkey}}"></paper-input>
+    <paper-input label="contract adres" value="{{encryptedmessage}}"></paper-input>
+    <paper-button raised on-tap="encryptString">Encrypt</paper-button>
+    <paper-button raised on-tap="decryptString">Decrypt</paper-button>
+  </section>
+
+
 </template>
 <script>
   (function() {
@@ -114,6 +124,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         this.account = this.global_keystore.getAddresses()[0];
        
+
+      },
+
+      encryptString: function(){
+        console.log('encrypting string',this.plainMessage);
+
+        var pw = "testing";
+        var ks = this.global_keystore; //new lightwallet.keystore("Mijn zaad!", pw);
+        var hdPath = "m/0'/0'/2'";
+        ks.addHdDerivationPath(hdPath, pw, {curve: 'curve25519', purpose: 'asymEncrypt'});
+        ks.generateNewEncryptionKeys(pw, 2, hdPath);
+        var pubKeys = ks.getPubKeys(hdPath);
+        var msg = "Hello World!";
+        var encrypted = ks.asymEncryptString(msg, pubKeys[0], pubKeys[1], pw, hdPath);
+        var cleartext = ks.asymDecryptString(encrypted, pubKeys[1], pubKeys[0], pw, hdPath);
+
 
       },
 
